@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>京都市伏見区ごみ分別検索</title>
+    <style>
+        body {
+            font-family: 'Meiryo', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background-color: #2e8b57;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .content-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .search-box {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        #search-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #2e8b57;
+            border-radius: 4px 0 0 4px;
+        }
+        .search-btn {
+            padding: 10px 15px;
+            background-color: #2e8b57;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        .result-box {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #2e8b57;
+            margin-bottom: 20px;
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        details {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .example-search {
+            color: #2e8b57;
+            text-decoration: none;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .result-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .error {
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>京都市伏見区ごみ分別検索</h1>
+        <p>伏見区のごみ分別ルールに基づいた検索システム</p>
+    </div>
+
+    <div class="content-box">
+        <div class="search-box">
+            <h2>ごみ分別検索</h2>
+            <div style="display: flex; margin-bottom: 15px;">
+                <input type="text" id="search-input" placeholder="例: ペットボトル、電池、衣類...">
+                <button onclick="searchWaste()" class="search-btn">検索</button>
+            </div>
+            <p>よくある検索: 
+                <span class="example-search" onclick="setSearch('ペットボトル')">ペットボトル</span>
+                <span class="example-search" onclick="setSearch('発泡スチロール')">発泡スチロール</span>
+                <span class="example-search" onclick="setSearch('蛍光灯')">蛍光灯</span>
+                <span class="example-search" onclick="setSearch('衣類')">衣類</span>
+            </p>
+        </div>
+        
+        <div id="search-result" class="result-box">
+            <h3>検索結果</h3>
+            <div id="result-content"></div>
+        </div>
+        
+        <h2>伏見区ごみ分別主要カテゴリー</h2>
+        <div class="category-grid">
+            <details>
+                <summary>可燃ごみ</summary>
+                <ul>
+                    <li>生ごみ（水分をよく切る）</li>
+                    <li>紙おむつ（汚物は取り除く）</li>
+                    <li>革製品・布製品</li>
+                    <li>木くず（長さ50cm以下）</li>
+                </ul>
+            </details>
+            
+            <details>
+                <summary>不燃ごみ</summary>
+                <ul>
+                    <li>金属製品（鍋、フライパンなど）</li>
+                    <li>ガラス製品（窓ガラス、コップなど）</li>
+                    <li>小型家電（20cm以下のもの）</li>
+                    <li>傘（金属部分は外さなくてよい）</li>
+                </ul>
+            </details>
+            
+            <details>
+                <summary>資源ごみ</summary>
+                <ul>
+                    <li>ペットボトル（キャップとラベルは外す）</li>
+                    <li>缶・びん（中身を空にして洗う）</li>
+                    <li>紙パック（洗って開いて乾かす）</li>
+                    <li>新聞・雑誌・段ボール（ひもで縛る）</li>
+                </ul>
+            </details>
+            
+            <details>
+                <summary>有害ごみ</summary>
+                <ul>
+                    <li>乾電池・充電式電池</li>
+                    <li>蛍光灯・LEDランプ</li>
+                    <li>体温計・水銀体温計</li>
+                    <li>スプレー缶（中身を使い切る）</li>
+                </ul>
+            </details>
+            
+            <details>
+                <summary>粗大ごみ</summary>
+                <ul>
+                    <li>一辺の長さが50cm以上のごみ</li>
+                    <li>家具（テーブル、椅子など）</li>
+                    <li>自転車（タイヤは外さなくてよい）</li>
+                    <li>電気製品（家電リサイクル法対象外）</li>
+                </ul>
+            </details>
+            
+            <details>
+                <summary>家電リサイクル法対象</summary>
+                <ul>
+                    <li>テレビ（ブラウン管、液晶、プラズマ）</li>
+                    <li>冷蔵庫・冷凍庫</li>
+                    <li>洗濯機・衣類乾燥機</li>
+                    <li>エアコン（室外機含む）</li>
+                </ul>
+            </details>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2023 京都市伏見区ごみ分別ガイド | このシステムは伏見区のごみ分別ルールに基づいています</p>
+        <p>ごみの出し方に関する詳細は<a href="https://www.city.kyoto.lg.jp/fushimi/page/0000259565.html" target="_blank">伏見区役所公式サイト</a>をご確認ください</p>
+    </div>
+    
+    <script>
+        // 伏見区ごみ分別データ
+        const fushimiWasteData = [
+            {
+                name: "ペットボトル",
+                category: "資源ごみ",
+                disposal_method: "キャップとラベルを外し、中をすすいで軽くつぶしてから透明または半透明の袋に入れて出す。",
+                notes: "キャップとラベルはプラスチックごみとして分別。伏見区では毎月第1・第3水曜日が回収日。",
+                keywords: "PETボトル,プラスチックボトル,飲料容器"
+            },
+            {
+                name: "発泡スチロールトレー",
+                category: "資源ごみ",
+                disposal_method: "汚れを落とし、スーパーの回収ボックスへ持参するか、月2回の資源ごみ回収日に出す。",
+                notes: "食品用トレーは洗って乾かしてから。伏見区ではリサイクル推進協力店で回収している場合もあり。",
+                keywords: "トレー,食品容器,白色トレー"
+            },
+            {
+                name: "蛍光灯",
+                category: "有害ごみ",
+                disposal_method: "割れないように元の箱や新聞紙に包み、「有害ごみ」の表示をして指定日に出す。",
+                notes: "LED電球は不燃ごみ。伏見区では毎月第4火曜日が回収日。",
+                keywords: "照明,電球,ライト"
+            },
+            {
+                name: "衣類",
+                category: "可燃ごみ",
+                disposal_method: "汚れた衣類はそのまま、きれいなものはリサイクルショップや古着回収へ。",
+                notes: "ボタンやファスナーは外さなくてよい。伏見区では年に2回、古着・古布の特別回収あり。",
+                keywords: "服,洋服,布団,布製品"
+            },
+            {
+                name: "生ごみ",
+                category: "可燃ごみ",
+                disposal_method: "水分をよく切り、指定の可燃ごみ袋に入れて出す。",
+                notes: "野菜くずなどはできるだけ堆肥化を。伏見区では生ごみ処理機補助制度あり。",
+                keywords: "食品廃棄物,野菜くず,調理くず"
+            },
+            {
+                name: "新聞紙",
+                category: "資源ごみ",
+                disposal_method: "ひもで十字に縛るか、紙製の袋に入れて指定日に出す。",
+                notes: "雨の日は回収されない場合あり。伏見区では毎週金曜日が回収日。",
+                keywords: "新聞,紙資源,紙"
+            },
+            {
+                name: "段ボール",
+                category: "資源ごみ",
+                disposal_method: "平らにたたんでひもで縛り、指定日に出す。",
+                notes: "大きい場合は1m四方以下に切る。伏見区では月2回の回収日あり。",
+                keywords: "ダンボール,梱包材"
+            },
+            {
+                name: "アルミ缶",
+                category: "資源ごみ",
+                disposal_method: "中身を空にして軽くすすぎ、指定の資源ごみ袋へ。",
+                notes: "スチール缶と分別不要。伏見区では毎月第2・第4木曜日が回収日。",
+                keywords: "飲料缶,ビール缶"
+            },
+            {
+                name: "スプレー缶",
+                category: "有害ごみ",
+                disposal_method: "中身を完全に使い切り、穴を開けずに「有害ごみ」と表示して出す。",
+                notes: "ガスライターも同様。伏見区ではケガ防止のためビニール袋に入れて出すこと。",
+                keywords: "エアゾール,ガスボンベ"
+            },
+            {
+                name: "小型家電",
+                category: "不燃ごみ",
+                disposal_method: "20cm以下のものは不燃ごみとして、指定袋に入れて出す。",
+                notes: "20cm以上のものは粗大ごみ。伏見区では小型家電リサイクルボックスも設置。",
+                keywords: "電子機器,携帯電話,デジタルカメラ"
+            },
+            {
+                name: "粗大ごみ",
+                category: "粗大ごみ",
+                disposal_method: "事前に京都市粗大ごみ受付センターへ連絡し、処理券を購入して指定日に出す。",
+                notes: "一辺が50cm以上のもの。伏見区では収集場所が指定されるので確認を。",
+                keywords: "家具,家電,大型ごみ"
+            },
+            {
+                name: "家電リサイクル法対象品",
+                category: "家電リサイクル",
+                disposal_method: "販売店または指定引取場所へ持ち込み、リサイクル料金を支払って処分。",
+                notes: "テレビ、冷蔵庫、洗濯機、エアコンが対象。伏見区では区役所が相談窓口。",
+                keywords: "家電4品目,大型家電"
+            }
+        ];
+
+        function setSearch(term) {
+            document.getElementById('search-input').value = term;
+            searchWaste();
+        }
+        
+        function searchWaste() {
+            const input = document.getElementById('search-input').value.trim();
+            const resultDiv = document.getElementById('result-content');
+            const resultBox = document.getElementById('search-result');
+            
+            if (!input) {
+                alert('検索キーワードを入力してください');
+                return;
+            }
+            
+            const searchTerm = input.toLowerCase();
+            const results = fushimiWasteData.filter(item => {
+                // 检查名称、分类、处理方法、注意事项和关键词中是否包含搜索词
+                return item.name.toLowerCase().includes(searchTerm) ||
+                       item.category.toLowerCase().includes(searchTerm) ||
+                       item.disposal_method.toLowerCase().includes(searchTerm) ||
+                       item.notes.toLowerCase().includes(searchTerm) ||
+                       (item.keywords && item.keywords.toLowerCase().split(',').some(kw => kw.trim() === searchTerm));
+            });
+            
+            if (results.length > 0) {
+                let html = '';
+                results.forEach(item => {
+                    html += `
+                        <div class="result-item">
+                            <h4 style="color: #2e8b57; margin-top: 0;">${item.name}</h4>
+                            <p><strong>分類</strong>: ${item.category}</p>
+                            <p><strong>出し方</strong>: ${item.disposal_method}</p>
+                            <p><strong>注意事項</strong>: ${item.notes}</p>
+                        </div>
+                    `;
+                });
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.innerHTML = `
+                    <p>"${input}" に該当するごみの情報が見つかりませんでした。<br>
+                    より一般的な名称で検索するか、<a href="https://www.city.kyoto.lg.jp/fushimi/page/0000259565.html" target="_blank">伏見区役所のごみ分別ガイド</a>を参照してください。</p>
+                `;
+            }
+            
+            resultBox.style.display = 'block';
+        }
+        
+        // 入力欄でEnterキーを押したときも検索実行
+        document.getElementById('search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchWaste();
+            }
+        });
+    </script>
+</body>
+</html>
